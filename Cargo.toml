@@ -1,0 +1,14 @@
+[package]
+name = "lorentz_vector"
+version = "0.1.0"
+authors = ["Torsten Weber <tweber@physik.rwth-aachen.de>"]
+license = "MIT/Apache-2.0"
+readme = "README.md"
+description = "A library for working with four-vectors (or Lorentz vectors)"
+keywords = ["physics", "lorentz", "four", "vector"]
+categories = ["science"]
+
+[dependencies]
+
+[dev-dependencies]
+approx = "*"
