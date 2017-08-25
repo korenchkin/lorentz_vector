@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/korenchkin/lorentz_vector.svg?branch=master)](https://travis-ci.org/korenchkin/lorentz_vector)
+[![Build status](https://ci.appveyor.com/api/projects/status/t9b1ja9g4311uhnx/branch/master?svg=true)](https://ci.appveyor.com/project/TorstenWeber/lorentz-vector/branch/master)
 
 # LorentzVector
 
