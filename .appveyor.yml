@@ -20,8 +20,8 @@ install:
 build: false
 
 test_script:
-    cargo build --target %TARGET% --verbose &&
-    cargo test --target %TARGET% --verbose &&
+    - cargo build --target %TARGET% --verbose
+    - cargo test --target %TARGET% --verbose
 
 cache:
     - C:\Users\appveyor\.cargo\registry
