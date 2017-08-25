@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/korenchkin/lorentz_vector.svg?branch=master)](https://travis-ci.org/korenchkin/lorentz_vector)
+
 # LorentzVector
 
 A library for working with four-vectors (or Lorentz vectors).
