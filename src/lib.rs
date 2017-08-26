@@ -36,6 +36,14 @@
 
 #![deny(missing_docs)]
 
+#[cfg(test)]
+#[macro_use]
+extern crate approx;
+
+#[cfg(test)]
+#[macro_use]
+extern crate quickcheck;
+
 use std::ops::{Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Div, DivAssign};
 use std::ops::{Index, IndexMut};
 
@@ -688,6 +696,73 @@ impl IndexMut<Component> for LorentzVector {
 
 #[cfg(test)]
 mod tests {
+    use super::LorentzVector;
+
+    mod with_mpxpypz {
+        use super::LorentzVector;
+
+        macro_rules! gen_with_mpxpypz_test {
+            ($name:ident, $e:expr, $m:expr, $px:expr, $py:expr, $pz:expr) => {
+                #[test]
+                fn $name() {
+                    let rust = LorentzVector::with_mpxpypz($m, $px, $py, $pz);
+                    assert_relative_eq!($e, rust.e(), max_relative=1e-10);
+                    assert_eq!($px, rust.px());
+                    assert_eq!($py, rust.py());
+                    assert_eq!($pz, rust.pz());
+                }
+            }
+        }
+        gen_with_mpxpypz_test!(zero_vec, 0., 0., 0., 0., 0.);
+        gen_with_mpxpypz_test!(zero_mass, 20., 0., 0., 0., 20.);
+        gen_with_mpxpypz_test!(m_183, 351.276436786, 183.995576266, -218.434643021, 6.26690336634, -204.420634002);
+        gen_with_mpxpypz_test!(m_416, 505.86533915, 416.115278792, -287.365889021, 1.00105672531, -12.9483520745);
+
+        #[test]
+        #[should_panic]
+        fn negative_mass() {
+            LorentzVector::with_mpxpypz(-416.115278792, -287.365889021, 1.00105672531, -12.9483520745);
+        }
+    }
+
+    mod mass {
+        use super::LorentzVector;
+        use quickcheck::TestResult;
+
+        macro_rules! gen_mass_test {
+            ($name:ident, $e:expr, $m:expr, $px:expr, $py:expr, $pz:expr) => {
+                #[test]
+                fn $name() {
+                    let vec = LorentzVector::with_epxpypz($e, $px, $py, $pz);
+                    assert_relative_eq!($m, vec.mass(), max_relative=5e-10);
+                }
+            }
+        }
+        gen_mass_test!(zero_vec, 0., 0., 0., 0., 0.);
+        gen_mass_test!(zero_mass, 30., 0., 0., 0., 30.);
+        gen_mass_test!(m_27, 484.615676012, 27.857051909, 64.1422201998, 477.822408648, 40.593835462);
+        gen_mass_test!(m_623, 658.149763307, 623.259906573, -28.940461633, 43.6343626721, 204.857735697);
+
+        #[test]
+        #[should_panic]
+        fn negative_mass() {
+            let vec = LorentzVector::with_epxpypz(416.115278792, -287.365889021, 1.00105672531, -512.9483520745);
+            let m = vec.mass();
+            println!("This should have panicked with a negative mass, despite the mass being '{}'", m);
+        }
+
+        quickcheck! {
+            fn cmp_against_with_mpxpypz(mass: f64, px: f64, py: f64, pz: f64) -> TestResult {
+                if mass < 0. {
+                    return TestResult::discard();
+                }
+                let vec = LorentzVector::with_mpxpypz(mass, px, py, pz);
+                TestResult::from_bool(relative_eq!(mass, vec.mass(), max_relative=1e-10))
+            }
+        }
+    }
+
+
     #[test]
     fn it_works() {
     }
