@@ -271,6 +271,9 @@ impl LorentzVector {
     /// }
     /// ```
     pub fn with_mpxpypz(m: f64, px: f64, py: f64, pz: f64) -> LorentzVector {
+        if m < 0. {
+            panic!("LorentzVector::with_mpxpypz: Negative mass ({})", m);
+        }
         let e_sq = m.powi(2) + px.powi(2) + py.powi(2) + pz.powi(2);
         let e = e_sq.sqrt();
         LorentzVector { e, px, py, pz }
@@ -366,7 +369,7 @@ impl LorentzVector {
 
     /// Computes the invariant mass of a four-momentum.
     ///
-    /// This function performs no special check that the four-momentum is physical and will panic
+    /// This function checks that the four-momentum is time- or light-like and will panic
     /// if it is not. This may be a problem for vectors that should be massless, but because of
     /// numerical issues have a tiny negative mass squared. To deal with this case the function
     /// [`mass_root`] exists which emulates the behaviour of the `ROOT` function `M()` which is
@@ -394,7 +397,11 @@ impl LorentzVector {
     /// }
     /// ```
     pub fn mass(&self) -> f64 {
-        self.mass_squared().sqrt()
+        let m_sq = self.mass_squared();
+        if m_sq < 0. {
+            panic!("LorentzVector::mass: Negative m^2 ({})", m_sq);
+        }
+        m_sq.sqrt()
     }
 
     /// Computes the invariant mass of a four-momentum.
