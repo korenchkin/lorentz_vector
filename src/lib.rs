@@ -733,6 +733,25 @@ impl IndexMut<Component> for LorentzVector {
 mod tests {
     use super::LorentzVector;
 
+    macro_rules! gen_test {
+        ($name:ident => method=$method:ident, expected=$exp:expr, epxpypz=($e:expr, $px:expr, $py:expr, $pz:expr)) => {
+            #[test]
+            fn $name() {
+                let vector = LorentzVector::with_epxpypz($e, $px, $py, $pz);
+                let result = vector.$method();
+                assert_relative_eq!($exp, result, max_relative=1e-9);
+            }
+        };
+        ($name:ident => method=$method:ident, expected=$exp:expr, mpxpypz=($m:expr, $px:expr, $py:expr, $pz:expr)) => {
+            #[test]
+            fn $name() {
+                let vector = LorentzVector::with_mpxpypz($m, $px, $py, $pz);
+                let result = vector.$method();
+                assert_relative_eq!($exp, result, max_relative=1e-9);
+            }
+        };
+    }
+
     mod with_mpxpypz {
         use super::LorentzVector;
 
@@ -764,19 +783,12 @@ mod tests {
         use super::LorentzVector;
         use quickcheck::TestResult;
 
-        macro_rules! gen_mass_test {
-            ($name:ident, $e:expr, $m:expr, $px:expr, $py:expr, $pz:expr) => {
-                #[test]
-                fn $name() {
-                    let vec = LorentzVector::with_epxpypz($e, $px, $py, $pz);
-                    assert_relative_eq!($m, vec.mass(), max_relative=5e-10);
-                }
-            }
-        }
-        gen_mass_test!(zero_vec, 0., 0., 0., 0., 0.);
-        gen_mass_test!(zero_mass, 30., 0., 0., 0., 30.);
-        gen_mass_test!(m_27, 484.615676012, 27.857051909, 64.1422201998, 477.822408648, 40.593835462);
-        gen_mass_test!(m_623, 658.149763307, 623.259906573, -28.940461633, 43.6343626721, 204.857735697);
+        gen_test!(zero_vec => method=mass, expected=0., epxpypz=(0., 0., 0., 0.));
+        gen_test!(zero_mass => method=mass, expected=0., epxpypz=(30., 0., 0., 30.));
+        gen_test!(m_27 => method=mass, expected=27.857051909,
+            epxpypz=(484.615676012, 64.1422201998, 477.822408648, 40.593835462));
+        gen_test!(m_623 => method=mass, expected=623.259906573,
+            epxpypz=(658.149763307, -28.940461633, 43.6343626721, 204.857735697));
 
         #[test]
         #[should_panic]
@@ -799,45 +811,31 @@ mod tests {
 
     mod pt_squared {
         use super::LorentzVector;
-        macro_rules! gen_pt_squared_test {
-            ($name:ident, $pt:expr, $e:expr, $px:expr, $py:expr, $pz:expr) => {
-                #[test]
-                fn $name() {
-                    let vec = LorentzVector::with_epxpypz($e, $px, $py, $pz);
-                    assert_relative_eq!($pt*$pt, vec.pt_squared(), max_relative=5e-10);
-                }
-            }
-        }
-        gen_pt_squared_test!(zero_vec, 0., 0., 0., 0., 0.);
-        gen_pt_squared_test!(zero_pt, 0., 40., 0., 0., 40.);
-        gen_pt_squared_test!(only_x, 10., 10., 10., 0., 0.);
-        gen_pt_squared_test!(only_neg_x, 10., 10., -10., 0., 0.);
-        gen_pt_squared_test!(only_y, 62., 62., 0., 62., 0.);
-        gen_pt_squared_test!(only_neg_y, 62., 62., 0., -62., 0.);
-        gen_pt_squared_test!(pt_315, 315.213245164, 369.671172305, -56.1746860374, -310.167365426, 192.968794135);
-        gen_pt_squared_test!(pt_119, 119.605738865, 1716.31673646, -81.4393539327, -87.596600394, 251.364268921);
+        gen_test!(zero_vec => method=pt_squared, expected=0., epxpypz=(0., 0., 0., 0.));
+        gen_test!(zero_pt => method=pt_squared, expected=0., epxpypz=(40., 0., 0., 40.));
+        gen_test!(only_x => method=pt_squared, expected=100., epxpypz=(10., 10., 0., 0.));
+        gen_test!(only_neg_x => method=pt_squared, expected=100., epxpypz=(10., -10., 0., 0.));
+        gen_test!(only_y => method=pt_squared, expected=62.*62., epxpypz=(62., 0., 62., 0.));
+        gen_test!(only_neg_y => method=pt_squared, expected=62.*62., epxpypz=(62., 0., -62., 0.));
+        gen_test!(pt_315 => method=pt_squared, expected=315.213245164_f64.powi(2),
+            epxpypz=(369.671172305, -56.1746860374, -310.167365426, 192.968794135));
+        gen_test!(pt_119 => method=pt_squared, expected=119.605738865_f64.powi(2),
+            epxpypz=(1716.31673646, -81.4393539327, -87.596600394, 251.364268921));
 
     }
 
     mod pt {
         use super::LorentzVector;
-        macro_rules! gen_pt_test {
-            ($name:ident, $pt:expr, $e:expr, $px:expr, $py:expr, $pz:expr) => {
-                #[test]
-                fn $name() {
-                    let vec = LorentzVector::with_epxpypz($e, $px, $py, $pz);
-                    assert_relative_eq!($pt, vec.pt(), max_relative=5e-10);
-                }
-            }
-        }
-        gen_pt_test!(zero_vec, 0., 0., 0., 0., 0.);
-        gen_pt_test!(zero_pt, 0., 40., 0., 0., 40.);
-        gen_pt_test!(only_x, 10., 10., 10., 0., 0.);
-        gen_pt_test!(only_neg_x, 10., 10., -10., 0., 0.);
-        gen_pt_test!(only_y, 62., 62., 0., 62., 0.);
-        gen_pt_test!(only_neg_y, 62., 62., 0., -62., 0.);
-        gen_pt_test!(pt_144, 144.911221504, 155.40127331, 15.3726963439, 144.093519372, 43.24658756);
-        gen_pt_test!(pt_231, 231.989521619, 785.226886448, 217.637082227, -80.3320520148, -100.00571379);
+        gen_test!(zero_vec   => method=pt, expected=0., epxpypz=(0., 0., 0., 0.));
+        gen_test!(zero_pt    => method=pt, expected=0., epxpypz=(40., 0., 0., 40.));
+        gen_test!(only_x     => method=pt, expected=10., epxpypz=(10., 10., 0., 0.));
+        gen_test!(only_neg_x => method=pt, expected=10., epxpypz=(10., -10., 0., 0.));
+        gen_test!(only_y     => method=pt, expected=62., epxpypz=(62., 0., 62., 0.));
+        gen_test!(only_neg_y => method=pt, expected=62., epxpypz=(62., 0., -62., 0.));
+        gen_test!(pt_144     => method=pt, expected=144.911221504,
+            epxpypz=(155.40127331, 15.3726963439, 144.093519372, 43.24658756));
+        gen_test!(pt_231     => method=pt, expected=231.989521619,
+            epxpypz=(785.226886448, 217.637082227, -80.3320520148, -100.00571379));
     }
 
     #[test]
