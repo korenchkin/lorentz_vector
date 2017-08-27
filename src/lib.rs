@@ -757,7 +757,7 @@ mod tests {
                     return TestResult::discard();
                 }
                 let vec = LorentzVector::with_mpxpypz(mass, px, py, pz);
-                TestResult::from_bool(relative_eq!(mass, vec.mass(), max_relative=1e-10))
+                TestResult::from_bool(relative_eq!(mass, vec.mass(), max_relative=1e-9))
             }
         }
     }
