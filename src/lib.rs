@@ -447,6 +447,41 @@ impl LorentzVector {
             -((-mass_sq).sqrt())
         }
     }
+
+    /// Computes the square of the transverse momentum of a
+    /// four-momentum.
+    ///
+    /// As usual in high energy physics, the transverse plane is
+    /// defined as the x-y-plane, so that p_T^2 = p_x^2 + p_y^2.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use lorentz_vector::LorentzVector;
+    ///
+    /// let vec = LorentzVector::with_epxpypz(200., 4., -3., 20.);
+    /// assert_eq!(vec.pt_squared(), 25.);
+    /// ```
+    pub fn pt_squared(&self) -> f64 {
+        self.px.powi(2) + self.py.powi(2)
+    }
+
+    /// Computes the transverse momentum of a four-momentum.
+    ///
+    /// As usual in high energy physics, the transverse plane is
+    /// defined as the x-y-plane, so that p_T = sqrt(p_x^2 + p_y^2).
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use lorentz_vector::LorentzVector;
+    ///
+    /// let vec = LorentzVector::with_epxpypz(200., 4., -3., 20.);
+    /// assert_eq!(vec.pt(), 5.);
+    /// ```
+    pub fn pt(&self) -> f64 {
+        self.pt_squared().sqrt()
+    }
 }
 
 impl Default for LorentzVector {
@@ -762,6 +797,48 @@ mod tests {
         }
     }
 
+    mod pt_squared {
+        use super::LorentzVector;
+        macro_rules! gen_pt_squared_test {
+            ($name:ident, $pt:expr, $e:expr, $px:expr, $py:expr, $pz:expr) => {
+                #[test]
+                fn $name() {
+                    let vec = LorentzVector::with_epxpypz($e, $px, $py, $pz);
+                    assert_relative_eq!($pt*$pt, vec.pt_squared(), max_relative=5e-10);
+                }
+            }
+        }
+        gen_pt_squared_test!(zero_vec, 0., 0., 0., 0., 0.);
+        gen_pt_squared_test!(zero_pt, 0., 40., 0., 0., 40.);
+        gen_pt_squared_test!(only_x, 10., 10., 10., 0., 0.);
+        gen_pt_squared_test!(only_neg_x, 10., 10., -10., 0., 0.);
+        gen_pt_squared_test!(only_y, 62., 62., 0., 62., 0.);
+        gen_pt_squared_test!(only_neg_y, 62., 62., 0., -62., 0.);
+        gen_pt_squared_test!(pt_315, 315.213245164, 369.671172305, -56.1746860374, -310.167365426, 192.968794135);
+        gen_pt_squared_test!(pt_119, 119.605738865, 1716.31673646, -81.4393539327, -87.596600394, 251.364268921);
+
+    }
+
+    mod pt {
+        use super::LorentzVector;
+        macro_rules! gen_pt_test {
+            ($name:ident, $pt:expr, $e:expr, $px:expr, $py:expr, $pz:expr) => {
+                #[test]
+                fn $name() {
+                    let vec = LorentzVector::with_epxpypz($e, $px, $py, $pz);
+                    assert_relative_eq!($pt, vec.pt(), max_relative=5e-10);
+                }
+            }
+        }
+        gen_pt_test!(zero_vec, 0., 0., 0., 0., 0.);
+        gen_pt_test!(zero_pt, 0., 40., 0., 0., 40.);
+        gen_pt_test!(only_x, 10., 10., 10., 0., 0.);
+        gen_pt_test!(only_neg_x, 10., 10., -10., 0., 0.);
+        gen_pt_test!(only_y, 62., 62., 0., 62., 0.);
+        gen_pt_test!(only_neg_y, 62., 62., 0., -62., 0.);
+        gen_pt_test!(pt_144, 144.911221504, 155.40127331, 15.3726963439, 144.093519372, 43.24658756);
+        gen_pt_test!(pt_231, 231.989521619, 785.226886448, 217.637082227, -80.3320520148, -100.00571379);
+    }
 
     #[test]
     fn it_works() {
