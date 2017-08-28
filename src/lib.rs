@@ -515,6 +515,48 @@ impl LorentzVector {
     pub fn pt(&self) -> f64 {
         self.pt_squared().sqrt()
     }
+
+    /// Computes the square of the transverse energy of a
+    /// four-momentum.
+    ///
+    /// As usual in high energy physics, the transverse plane is
+    /// defined as the x-y-plane, so that E_T^2 = E^2*p_T^2/p^2, where
+    /// p is the magnitude of the three-momentum.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use lorentz_vector::LorentzVector;
+    ///
+    /// let vec = LorentzVector::with_epxpypz(200., 4., 0., -3.);
+    /// assert_eq!(vec.et_squared(), (200_f64*4./5.).powi(2));
+    /// ```
+    pub fn et_squared(&self) -> f64 {
+        let p_sq = self.mag3_squared();
+        if p_sq == 0. {
+            0.
+        } else {
+            self.e.powi(2) * self.pt_squared() / self.mag3_squared()
+        }
+    }
+
+    /// Computes the transverse energy of a four-momentum.
+    ///
+    /// As usual in high energy physics, the transverse plane is
+    /// defined as the x-y-plane, so that E_T = E*p_T/p, where
+    /// p is the magnitude of the three-momentum.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use lorentz_vector::LorentzVector;
+    ///
+    /// let vec = LorentzVector::with_epxpypz(200., 4., 0., -3.);
+    /// assert_eq!(vec.et(), 200_f64*4./5.);
+    /// ```
+    pub fn et(&self) -> f64 {
+        self.et_squared().sqrt()
+    }
 }
 
 impl Default for LorentzVector {
@@ -899,6 +941,37 @@ mod tests {
             epxpypz=(155.40127331, 15.3726963439, 144.093519372, 43.24658756));
         gen_test!(pt_231     => method=pt, expected=231.989521619,
             epxpypz=(785.226886448, 217.637082227, -80.3320520148, -100.00571379));
+    }
+
+    mod et_squared {
+        use super::LorentzVector;
+        gen_test!(zero_vec => method=et_squared, expected=0., epxpypz=(0., 0., 0., 0.));
+        gen_test!(zero_et_massless => method=et_squared, expected=0., epxpypz=(300., 0., 0., -300.));
+        gen_test!(zero_et_massive => method=et_squared, expected=0., epxpypz=(800., 0., 0., -300.));
+        gen_test!(only_x => method=et_squared, expected=400., epxpypz=(20., 10., 0., 0.));
+        gen_test!(only_neg_x => method=et_squared, expected=400., epxpypz=(20., -10., 0., 0.));
+        gen_test!(only_y => method=et_squared, expected=72.*72., epxpypz=(72., 0., 62., 0.));
+        gen_test!(only_neg_y => method=et_squared, expected=72.*72., epxpypz=(72., 0., -62., 0.));
+        gen_test!(et_347 => method=et_squared, expected=347.924589557_f64.powi(2),
+            epxpypz=(400.616585689, -346.739438367, -18.3753575611, -198.201657029));
+        gen_test!(et_305 => method=et_squared, expected=305.620406211_f64.powi(2),
+            epxpypz=(317.307612993, -26.2268883955, 300.241479261, 84.1420887216));
+
+    }
+
+    mod et {
+        use super::LorentzVector;
+        gen_test!(zero_vec => method=et, expected=0., epxpypz=(0., 0., 0., 0.));
+        gen_test!(zero_et_massless => method=et, expected=0., epxpypz=(300., 0., 0., -300.));
+        gen_test!(zero_et_massive => method=et, expected=0., epxpypz=(800., 0., 0., -300.));
+        gen_test!(only_x => method=et, expected=20., epxpypz=(20., 10., 0., 0.));
+        gen_test!(only_neg_x => method=et, expected=20., epxpypz=(20., -10., 0., 0.));
+        gen_test!(only_y => method=et, expected=72., epxpypz=(72., 0., 62., 0.));
+        gen_test!(only_neg_y => method=et, expected=72., epxpypz=(72., 0., -62., 0.));
+        gen_test!(et_158 => method=et, expected=158.230719208,
+            epxpypz=(170.837911448, 145.648264664, 32.1009358759, 60.7109415654));
+        gen_test!(et_216 => method=et, expected=216.129121105,
+            epxpypz=(359.054975674, -197.767284995, -87.1345040568, -286.697612733));
     }
 
     #[test]
