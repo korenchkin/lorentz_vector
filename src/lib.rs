@@ -448,6 +448,39 @@ impl LorentzVector {
         }
     }
 
+    /// Computes the square of the magnitude of the spatial part of
+    /// a four-momentum.
+    ///
+    /// For a four-vector (E, px, py, pz) the returned value is
+    /// `px^2 + py^2 + pz^2.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use lorentz_vector::LorentzVector;
+    ///
+    /// let vec = LorentzVector::with_epxpypz(300., 4., -3., 12.);
+    /// assert_eq!(vec.mag3_squared(), 13.*13.);
+    pub fn mag3_squared(&self) -> f64 {
+        self.px.powi(2) + self.py.powi(2) + self.pz.powi(2)
+    }
+
+    /// Computes the magnitude of the spatial part of a four-momentum.
+    ///
+    /// For a four-vector (E, px, py, pz) the returned value is
+    /// `sqrt(px^2 + py^2 + pz^2).
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use lorentz_vector::LorentzVector;
+    ///
+    /// let vec = LorentzVector::with_epxpypz(300., 4., -3., 12.);
+    /// assert_eq!(vec.mag3(), 13.);
+    pub fn mag3(&self) -> f64 {
+        self.mag3_squared().sqrt()
+    }
+
     /// Computes the square of the transverse momentum of a
     /// four-momentum.
     ///
@@ -807,6 +840,36 @@ mod tests {
                 TestResult::from_bool(relative_eq!(mass, vec.mass(), max_relative=1e-9))
             }
         }
+    }
+
+    mod mag3_squared {
+        use super::LorentzVector;
+        gen_test!(zero_vec => method=mag3_squared, expected=0., epxpypz=(0., 0., 0., 0.));
+        gen_test!(only_x => method=mag3_squared, expected=100., epxpypz=(20., 10., 0., 0.));
+        gen_test!(only_neg_x => method=mag3_squared, expected=100., epxpypz=(20., -10., 0., 0.));
+        gen_test!(only_y => method=mag3_squared, expected=62.*62., epxpypz=(72., 0., 62., 0.));
+        gen_test!(only_neg_y => method=mag3_squared, expected=62.*62., epxpypz=(72., 0., -62., 0.));
+        gen_test!(only_z => method=mag3_squared, expected=90000., epxpypz=(300., 0., 0., 300.));
+        gen_test!(only_neg_z => method=mag3_squared, expected=90000., epxpypz=(800., 0., 0., -300.));
+        gen_test!(psq_322758 => method=mag3_squared, expected=322758.194588,
+            epxpypz=(569.205225111, -567.158157336, -7.97776293841, 32.033957815));
+        gen_test!(psq_304736 => method=mag3_squared, expected=304736.764911,
+            epxpypz=(615.906021332, -247.041748803, -491.820038055, -42.6636780736));
+    }
+
+    mod mag3 {
+        use super::LorentzVector;
+        gen_test!(zero_vec => method=mag3, expected=0., epxpypz=(0., 0., 0., 0.));
+        gen_test!(only_x => method=mag3, expected=10., epxpypz=(20., 10., 0., 0.));
+        gen_test!(only_neg_x => method=mag3, expected=10., epxpypz=(20., -10., 0., 0.));
+        gen_test!(only_y => method=mag3, expected=62., epxpypz=(72., 0., 62., 0.));
+        gen_test!(only_neg_y => method=mag3, expected=62., epxpypz=(72., 0., -62., 0.));
+        gen_test!(only_z => method=mag3, expected=300., epxpypz=(300., 0., 0., 300.));
+        gen_test!(only_neg_z => method=mag3, expected=300., epxpypz=(800., 0., 0., -300.));
+        gen_test!(p_252 => method=mag3, expected=252.884907845,
+            epxpypz=(268.233474351, -30.4568837411, 250.195069847, 20.6296357883));
+        gen_test!(p_210 => method=mag3, expected=210.843940223,
+            epxpypz=(537.631360064, -5.69712499673, -195.297072922, -79.2575750543));
     }
 
     mod pt_squared {
